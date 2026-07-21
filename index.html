@@ -53,23 +53,52 @@
       letter-spacing:0.08em;
     }
 
-    /* タイトル（スマホ対応） */
-    .title{
-      font-size:clamp(2.2rem, 8vw, 4.5rem);
-      font-weight:700;
-      letter-spacing:0.06em;
-      margin:14px 0 12px;
-      line-height:1.1;
-      text-align:center;
-      word-break:keep-all;
-      color:#f8fafc;
+/* タイトル（スマホ対応＋背景発光） */
+.title{
+  position:relative;
+  display:inline-block;
+  z-index:1;
 
-      /* 薄い青白い発光 */
-      text-shadow:
-        0 0 6px rgba(148, 163, 184, 0.35),
-        0 0 14px rgba(96, 165, 250, 0.18),
-        0 0 28px rgba(59, 130, 246, 0.10);
-    }
+  font-size:clamp(2.2rem, 8vw, 4.5rem);
+  font-weight:700;
+  letter-spacing:0.06em;
+  margin:14px 0 12px;
+  line-height:1.1;
+  text-align:center;
+  word-break:keep-all;
+  color:#f8fafc;
+
+  /* 文字の発光 */
+  text-shadow:
+    0 0 6px rgba(148,163,184,.35),
+    0 0 14px rgba(96,165,250,.18),
+    0 0 28px rgba(59,130,246,.10);
+}
+
+/* タイトルの真後ろに被さる光 */
+.title::before{
+  content:"";
+  position:absolute;
+  left:50%;
+  top:50%;
+  transform:translate(-50%, -50%);
+
+  width:clamp(140px, 28vw, 220px);
+  height:clamp(140px, 28vw, 220px);
+  border-radius:50%;
+
+  background:radial-gradient(
+    circle,
+    rgba(96,165,250,0.30) 0%,
+    rgba(96,165,250,0.16) 28%,
+    rgba(59,130,246,0.08) 52%,
+    rgba(11,16,32,0) 72%
+  );
+
+  filter:blur(18px);
+  z-index:-1;
+  pointer-events:none;
+}
 
     .subtitle{
       font-size:clamp(1.2rem, 3.5vw, 1.8rem);
