@@ -4,10 +4,11 @@
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
   <title>Arcana Record Games</title>
+
   <style>
     body{
       margin:0;
-      height:100vh;
+      min-height:100vh;
       display:flex;
       justify-content:center;
       align-items:center;
@@ -15,26 +16,63 @@
       color:#f8fafc;
       font-family:"Noto Sans JP", sans-serif;
       text-align:center;
+      padding:20px;
+      box-sizing:border-box;
     }
+
     .container{
+      width:100%;
+      max-width:900px;
       padding:24px;
     }
+
     .studio{
       color:#94a3b8;
       letter-spacing:0.2em;
       font-size:14px;
-      margin-bottom:20px;
+      margin-bottom:18px;
     }
+
+    /* PROJECT STARTED */
+    .project{
+      display:inline-block;
+      padding:6px 14px;
+      border:1px solid #475569;
+      border-radius:999px;
+      color:#cbd5e1;
+      font-size:12px;
+      letter-spacing:0.18em;
+      margin-bottom:8px;
+      background:#111827;
+    }
+
+    .project-jp{
+      color:#94a3b8;
+      font-size:14px;
+      margin-bottom:18px;
+      letter-spacing:0.08em;
+    }
+
+    /* タイトル（スマホ対応） */
     .title{
-      font-size:56px;
-      margin:0;
+      font-size:clamp(2.2rem, 8vw, 4.5rem);
+      font-weight:700;
+      letter-spacing:0.06em;
+      margin:14px 0 12px;
+      line-height:1.1;
+      text-align:center;
+      word-break:keep-all;
+      text-shadow:0 0 18px rgba(96,165,250,.18);
     }
+
     .subtitle{
-      font-size:28px;
-      margin-top:12px;
+      font-size:clamp(1.2rem, 3.5vw, 1.8rem);
+      margin-top:6px;
       margin-bottom:28px;
       color:#e2e8f0;
+      letter-spacing:0.04em;
     }
+
     .status{
       display:inline-block;
       padding:12px 20px;
@@ -43,7 +81,9 @@
       background:#111827;
       color:#cbd5e1;
       font-weight:600;
+      min-width:220px;
     }
+
     .copyright{
       margin-top:32px;
       font-size:12px;
@@ -51,14 +91,18 @@
     }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="studio">Arcana Record Games</div>
 
-    <h1 class="title">『アルカナレコード』</h1>
-    <div class="subtitle">シリーズ 開発中</div>
+    <div class="project">PROJECT STARTED</div>
+    <div class="project-jp">プロジェクト始動</div>
 
-    <div class="status">公式サイト準備中</div>
+    <h1 class="title">『アルカナレコード』</h1>
+    <div class="subtitle">シリーズ開発中</div>
+
+    <div class="status">公式サイト公開中</div>
 
     <div class="copyright">© 2026 Arcana Record Games</div>
   </div>
