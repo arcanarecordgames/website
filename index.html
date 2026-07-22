@@ -188,11 +188,65 @@
       height:20px;
       fill:currentColor;
     }
+
+    /* 初期フラッシュ演出：白い光→中央の発光位置へ収束 */
+    #intro-flash{
+      position:fixed;
+      inset:0;
+      background: radial-gradient(
+        circle at var(--flash-x, 50%) var(--flash-y, 38%),
+        #ffffff 0%,
+        #eaf4ff 30%,
+        #c7e2ff 55%,
+        #93c5fd 78%,
+        #60a5fa 100%
+      );
+      z-index:50;
+      pointer-events:none;
+      clip-path: circle(150% at 50% 50%);
+      opacity:1;
+      transition:
+        clip-path 1.15s cubic-bezier(.65, 0, .35, 1),
+        opacity 1.15s ease;
+    }
+
+    #intro-flash.shrink{
+      clip-path: circle(0% at var(--flash-x, 50%) var(--flash-y, 38%));
+      opacity:0;
+    }
+
+    /* テキストのふわっとした順次表示 */
+    @keyframes fadeInUp{
+      from{
+        opacity:0;
+        transform:translateY(14px);
+      }
+      to{
+        opacity:1;
+        transform:translateY(0);
+      }
+    }
+
+    .studio,
+    .project,
+    .project-jp,
+    .title,
+    .subtitle{
+      opacity:0;
+      animation: fadeInUp 0.8s ease forwards;
+    }
+
+    .studio{ animation-delay: 1.4s; }
+    .project{ animation-delay: 1.6s; }
+    .project-jp{ animation-delay: 1.75s; }
+    .title{ animation-delay: 1.95s; }
+    .subtitle{ animation-delay: 2.25s; }
   </style>
 </head>
 
 <body>
   <canvas id="starfield"></canvas>
+  <div id="intro-flash"></div>
 
   <div class="container">
     <div class="studio">Arcana Record Games</div>
@@ -383,6 +437,34 @@
     }
 
     animate();
+
+    // 初期フラッシュ：白い光がタイトル中央の発光位置へ収束する演出
+    (function initFlash(){
+      const flash = document.getElementById('intro-flash');
+      const titleEl = document.querySelector('.title');
+
+      function setFlashTarget(){
+        const rect = titleEl.getBoundingClientRect();
+        const cx = rect.left + rect.width / 2;
+        const cy = rect.top + rect.height / 2;
+        flash.style.setProperty('--flash-x', (cx / window.innerWidth * 100) + '%');
+        flash.style.setProperty('--flash-y', (cy / window.innerHeight * 100) + '%');
+      }
+
+      setFlashTarget();
+
+      // 少し白いフラッシュを見せてから収束を開始
+      requestAnimationFrame(() => {
+        setTimeout(() => {
+          flash.classList.add('shrink');
+        }, 200);
+      });
+
+      // アニメーション終了後は完全に非表示にしてクリックの妨げにならないようにする
+      flash.addEventListener('transitionend', () => {
+        flash.style.display = 'none';
+      }, { once: true });
+    })();
   </script>
 </body>
 </html>
