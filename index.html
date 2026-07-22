@@ -152,6 +152,77 @@
     0 0 18px rgba(59,130,246,.12);
   backdrop-filter:blur(6px);
 }
+/* ノイズ演出 */
+.observer-box{
+  opacity:0;
+  transform:translateY(6px);
+}
+
+.observer-box.reveal{
+  animation:observerReveal 1.2s ease forwards;
+}
+
+@keyframes observerReveal{
+  0%{
+    opacity:0;
+    filter:blur(10px);
+    transform:translateY(8px) scale(0.98);
+  }
+  18%{
+    opacity:.35;
+    filter:blur(2px);
+    transform:translateY(0) scale(1.01);
+  }
+  26%{
+    opacity:.15;
+    filter:blur(8px);
+  }
+  38%{
+    opacity:.7;
+    filter:blur(1px);
+  }
+  52%{
+    opacity:.4;
+    filter:blur(5px);
+  }
+  70%{
+    opacity:.95;
+    filter:blur(.5px);
+  }
+  100%{
+    opacity:1;
+    filter:blur(0);
+    transform:translateY(0) scale(1);
+  }
+}
+
+/* 文字のチラつき */
+.observer-id.glitch{
+  animation:glitchText .08s steps(2) 10;
+}
+
+@keyframes glitchText{
+  0%{
+    transform:translateX(0);
+    text-shadow:0 0 10px rgba(96,165,250,.22);
+  }
+  25%{
+    transform:translateX(-1px);
+    text-shadow:
+      -1px 0 rgba(255,0,80,.5),
+       1px 0 rgba(0,220,255,.5);
+  }
+  50%{
+    transform:translateX(1px);
+  }
+  75%{
+    transform:translateX(-.5px);
+  }
+  100%{
+    transform:translateX(0);
+    text-shadow:0 0 10px rgba(96,165,250,.22);
+  }
+}
 
     .status{
       display:inline-block;
@@ -282,7 +353,7 @@
 
 <!-- 観測者識別番号 -->
 <div class="observer-box">
-  <div class="observer-label">観測者識別番号</div>
+  <div class="observer-label">観測者コード</div>
   <div id="observerId" class="observer-id">AR-26312-XXXX</div>
 </div>
 
@@ -522,6 +593,25 @@
   // 表示
   document.getElementById('observerId').textContent = observerId;
 })();
+// 観測者コードのノイズ出現演出
+window.addEventListener('load', () => {
+  const box = document.querySelector('.observer-box');
+  const code = document.querySelector('.observer-id');
+
+  // 「シリーズ開発中」の表示後に開始（subtitleのアニメ終了後）
+  setTimeout(() => {
+    box.classList.add('reveal');
+
+    // ノイズ文字演出
+    setTimeout(() => {
+      code.classList.add('glitch');
+
+      setTimeout(() => {
+        code.classList.remove('glitch');
+      }, 900);
+    }, 180);
+  }, 2600); // subtitleの2.25sより少し後
+});
   </script>
 </body>
 </html>
