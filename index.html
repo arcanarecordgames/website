@@ -283,7 +283,7 @@
 <!-- 観測者識別番号 -->
 <div class="observer-box">
   <div class="observer-label">観測者識別番号</div>
-  <div id="observerId" class="observer-id">AR-0001-XXXX-26312</div>
+  <div id="observerId" class="observer-id">AR-26312-XXXX</div>
 </div>
 
 <div class="status">公式サイト公開中</div>
@@ -493,7 +493,7 @@
         flash.style.display = 'none';
       }, { once: true });
     })();
-    // 観測者識別番号（端末ごとに固定）
+// 観測者識別番号（端末ごとに固定）
 (function initObserverId(){
   const STORAGE_KEY = 'ar_observer_id';
 
@@ -507,20 +507,12 @@
     return result;
   }
 
-  // 発行順（今はローカル固定）
-  let serial = localStorage.getItem('ar_observer_serial');
-
-  if(!serial){
-    serial = '0001';
-    localStorage.setItem('ar_observer_serial', serial);
-  }
-
   // 既存IDを取得
   let observerId = localStorage.getItem(STORAGE_KEY);
 
   // 初回アクセス時のみ生成
   if(!observerId){
-    observerId = `AR-${serial}-${randomCode()}-26312`;
+    observerId = `AR-26312-${randomCode()}`;
     localStorage.setItem(STORAGE_KEY, observerId);
   }
 
