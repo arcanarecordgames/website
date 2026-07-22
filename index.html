@@ -495,8 +495,6 @@
     })();
 // 観測者識別番号（端末ごとに固定）
 (function initObserverId(){
-  localStorage.removeItem('ar_observer_id');
-  
   const STORAGE_KEY = 'ar_observer_id';
 
   // 16進数4文字を生成
