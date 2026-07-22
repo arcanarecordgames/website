@@ -509,11 +509,14 @@
     return result;
   }
 
-  // 既存IDを取得
+    // 既存IDを取得
   let observerId = localStorage.getItem(STORAGE_KEY);
 
-  // 初回アクセス時のみ生成
-  if(!observerId){
+  // 旧形式（AR-0001-XXXX-26312）が残っていたら作り直す
+  const oldFormat = /^AR-\d{4}-[0-9A-F]{4}-26312$/;
+
+  // 初回アクセス、または旧形式なら新形式へ更新
+  if(!observerId || oldFormat.test(observerId)){
     observerId = `AR-26312-${randomCode()}`;
     localStorage.setItem(STORAGE_KEY, observerId);
   }
