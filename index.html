@@ -122,13 +122,36 @@
   pointer-events:none;
 }
 
-    .subtitle{
-      font-size:clamp(1.2rem, 3.5vw, 1.8rem);
-      margin-top:6px;
-      margin-bottom:40px;
-      color:#e2e8f0;
-      letter-spacing:0.04em;
-    }
+/* 観測者識別番号 */
+.observer-box{
+  display:flex;
+  flex-direction:column;
+  align-items:center;
+  gap:8px;
+  margin:6px 0 26px;
+}
+
+.observer-label{
+  font-size:12px;
+  letter-spacing:0.22em;
+  color:#93c5fd;
+}
+
+.observer-id{
+  padding:12px 22px;
+  border:1px solid rgba(96,165,250,.28);
+  border-radius:14px;
+  background:rgba(15,23,42,.72);
+  color:#f8fafc;
+  font-size:clamp(1rem, 3vw, 1.35rem);
+  font-weight:700;
+  letter-spacing:0.14em;
+  text-shadow:0 0 10px rgba(96,165,250,.22);
+  box-shadow:
+    0 0 0 1px rgba(255,255,255,.03) inset,
+    0 0 18px rgba(59,130,246,.12);
+  backdrop-filter:blur(6px);
+}
 
     .status{
       display:inline-block;
@@ -257,8 +280,13 @@
     <h1 class="title">『アルカナレコード』</h1>
     <div class="subtitle">シリーズ開発中</div>
 
-    <div class="status">公式サイト公開中</div>
+<!-- 観測者識別番号 -->
+<div class="observer-box">
+  <div class="observer-label">観測者識別番号</div>
+  <div id="observerId" class="observer-id">AR-0001-XXXX-26312</div>
+</div>
 
+<div class="status">公式サイト公開中</div>
     <div class="social-links">
       <a href="https://x.com/arcanarecord" target="_blank" rel="noopener noreferrer" aria-label="公式X（旧Twitter）">
         <svg viewBox="0 0 24 24" aria-hidden="true">
@@ -465,6 +493,40 @@
         flash.style.display = 'none';
       }, { once: true });
     })();
+    // 観測者識別番号（端末ごとに固定）
+(function initObserverId(){
+  const STORAGE_KEY = 'ar_observer_id';
+
+  // 16進数4文字を生成
+  function randomCode(length = 4){
+    const chars = '0123456789ABCDEF';
+    let result = '';
+    for(let i = 0; i < length; i++){
+      result += chars[Math.floor(Math.random() * chars.length)];
+    }
+    return result;
+  }
+
+  // 発行順（今はローカル固定）
+  let serial = localStorage.getItem('ar_observer_serial');
+
+  if(!serial){
+    serial = '0001';
+    localStorage.setItem('ar_observer_serial', serial);
+  }
+
+  // 既存IDを取得
+  let observerId = localStorage.getItem(STORAGE_KEY);
+
+  // 初回アクセス時のみ生成
+  if(!observerId){
+    observerId = `AR-${serial}-${randomCode()}-26312`;
+    localStorage.setItem(STORAGE_KEY, observerId);
+  }
+
+  // 表示
+  document.getElementById('observerId').textContent = observerId;
+})();
   </script>
 </body>
 </html>
