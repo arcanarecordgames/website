@@ -1639,10 +1639,11 @@ window.addEventListener('load', () => {
     });
   }
 
-  // 端末のネイティブ共有（対応環境のみボタン表示）
+  // 端末のネイティブ共有（スマホなど対応環境のみボタン表示）
   const shareNative = document.getElementById('shareNative');
   if(shareNative){
-    if(navigator.share){
+    const isMobile = /Android|iPhone|iPad|iPod|Mobile/i.test(navigator.userAgent);
+    if(navigator.share && isMobile){
       shareNative.addEventListener('click', async () => {
         try{
           await navigator.share({
@@ -1655,7 +1656,7 @@ window.addEventListener('load', () => {
         }
       });
     } else {
-      // 非対応環境では非表示にする
+      // パソコンなど非対応環境では非表示にする
       shareNative.style.display = 'none';
     }
   }
