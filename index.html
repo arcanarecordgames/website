@@ -3,27 +3,71 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>Arcana Record Games</title>
+  <title>アルカナレコード（Arcana Record）公式サイト | Arcana Record Games</title>
+  <meta name="description" content="『アルカナレコード』(Arcana Record) は Arcana Record Games が開発中のシリーズ作品です。キャラクター・世界観・ストーリー・最新ニュースを公式サイトで随時公開中。">
+  <meta name="keywords" content="アルカナレコード, アルカナレコード 公式, arcanarecord, arcanarecord games, Arcana Record Games, Arcana Record">
+  <meta name="robots" content="index, follow">
+  <link rel="canonical" href="https://arcanarecordgames.com/">
+
+  <!-- OGP（SNSでのシェア時に表示される情報） -->
+  <meta property="og:type" content="website">
+  <meta property="og:site_name" content="アルカナレコード | Arcana Record Games">
+  <meta property="og:title" content="アルカナレコード（Arcana Record）公式サイト">
+  <meta property="og:description" content="Arcana Record Games が開発中のシリーズ作品『アルカナレコード』公式サイト。最新情報を随時更新中。">
+  <meta property="og:url" content="https://arcanarecordgames.com/">
+  <meta property="og:locale" content="ja_JP">
+  <!-- og:image は画像URLが決まり次第、下記に追加してください -->
+  <!-- <meta property="og:image" content="https://arcanarecordgames.com/ogp.png"> -->
+
+  <!-- X（Twitter）カード -->
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:site" content="@arcanarecord">
+  <meta name="twitter:title" content="アルカナレコード（Arcana Record）公式サイト">
+  <meta name="twitter:description" content="Arcana Record Games が開発中のシリーズ作品『アルカナレコード』公式サイト。">
+
+  <!-- 構造化データ：検索エンジンに正式名称・別名を伝える -->
+  <script type="application/ld+json">
+  {
+    "@context": "https://schema.org",
+    "@type": "WebSite",
+    "name": "アルカナレコード",
+    "alternateName": ["アルカナレコード 公式", "Arcana Record", "arcanarecord", "arcanarecord games", "Arcana Record Games"],
+    "url": "https://arcanarecordgames.com/",
+    "publisher": {
+      "@type": "Organization",
+      "name": "Arcana Record Games",
+      "sameAs": [
+        "https://x.com/arcanarecord",
+        "https://www.youtube.com/@arcanarecord"
+      ]
+    }
+  }
+  </script>
 
   <style>
     html, body{
       margin:0;
       min-height:100vh;
-      height:100%;
     }
 
     body{
       position:relative;
       display:flex;
       justify-content:center;
-      align-items:center;
+      align-items:flex-start;
       background:#0b1020;
       color:#f8fafc;
       font-family:"Noto Sans JP", sans-serif;
       text-align:center;
       padding:20px;
       box-sizing:border-box;
-      overflow:hidden;
+      overflow-x:hidden;
+    }
+
+    /* ホーム画面のみ縦中央寄せ（コンテンツが短いため） */
+    #view-home.active{
+      min-height:calc(100vh - 40px);
+      justify-content:center;
     }
 
     /* 流れ星を描く背景キャンバス */
@@ -283,6 +327,510 @@
       fill:currentColor;
     }
 
+    /* シェアセクション */
+    .share-section{
+      margin-top:30px;
+      padding-top:26px;
+      border-top:1px solid rgba(148,163,184,.16);
+    }
+
+    .share-label{
+      font-size:12px;
+      letter-spacing:0.2em;
+      color:#93c5fd;
+      margin-bottom:14px;
+    }
+
+    .share-links{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      gap:20px;
+      flex-wrap:wrap;
+    }
+
+    .share-links button,
+    .share-links a{
+      display:flex;
+      justify-content:center;
+      align-items:center;
+      width:44px;
+      height:44px;
+      border:1px solid #334155;
+      border-radius:50%;
+      background:#111827;
+      color:#cbd5e1;
+      transition:transform 0.2s ease, border-color 0.2s ease, box-shadow 0.2s ease;
+      text-decoration:none;
+      cursor:pointer;
+      font-family:inherit;
+      padding:0;
+    }
+
+    .share-links button:active,
+    .share-links a:active{
+      transform:translateY(-1px);
+    }
+
+    @media (hover: hover) and (pointer: fine){
+      .share-links button:hover,
+      .share-links a:hover{
+        transform:translateY(-3px);
+        border-color:#60a5fa;
+        box-shadow:0 0 14px rgba(96,165,250,0.35);
+        color:#f8fafc;
+      }
+    }
+
+    .share-links svg{
+      width:20px;
+      height:20px;
+      fill:currentColor;
+    }
+
+    /* コピー完了トースト */
+    #copy-toast{
+      position:fixed;
+      left:50%;
+      bottom:32px;
+      transform:translateX(-50%) translateY(12px);
+      padding:10px 20px;
+      background:#111827;
+      border:1px solid #334155;
+      border-radius:999px;
+      color:#f8fafc;
+      font-size:13px;
+      letter-spacing:0.05em;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity 0.25s ease, transform 0.25s ease;
+      z-index:60;
+      box-shadow:0 0 18px rgba(59,130,246,.25);
+    }
+
+    #copy-toast.show{
+      opacity:1;
+      transform:translateX(-50%) translateY(0);
+    }
+
+    /* ハンバーガーメニュー */
+    .menu-toggle{
+      position:fixed;
+      top:20px;
+      right:20px;
+      z-index:40;
+      width:44px;
+      height:44px;
+      border:1px solid #334155;
+      border-radius:12px;
+      background:rgba(17,24,39,.85);
+      backdrop-filter:blur(6px);
+      display:flex;
+      flex-direction:column;
+      justify-content:center;
+      align-items:center;
+      gap:5px;
+      cursor:pointer;
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .menu-toggle:hover{
+      border-color:#60a5fa;
+      box-shadow:0 0 14px rgba(96,165,250,.3);
+    }
+
+    .menu-toggle span{
+      display:block;
+      width:20px;
+      height:2px;
+      background:#cbd5e1;
+      border-radius:2px;
+      transition:transform .25s ease, opacity .25s ease, background .25s ease;
+    }
+
+    .menu-toggle.active span{ background:#f8fafc; }
+    .menu-toggle.active span:nth-child(1){ transform:translateY(7px) rotate(45deg); }
+    .menu-toggle.active span:nth-child(2){ opacity:0; }
+    .menu-toggle.active span:nth-child(3){ transform:translateY(-7px) rotate(-45deg); }
+
+    /* メニュー背景オーバーレイ */
+    .nav-overlay{
+      position:fixed;
+      inset:0;
+      background:rgba(11,16,32,.55);
+      backdrop-filter:blur(2px);
+      z-index:41;
+      opacity:0;
+      pointer-events:none;
+      transition:opacity .25s ease;
+    }
+
+    .nav-overlay.show{
+      opacity:1;
+      pointer-events:auto;
+    }
+
+    /* スライドインメニューパネル */
+    .nav-menu{
+      position:fixed;
+      top:0;
+      right:0;
+      height:100%;
+      width:min(78vw, 300px);
+      background:#0f1526;
+      border-left:1px solid rgba(148,163,184,.18);
+      z-index:42;
+      display:flex;
+      flex-direction:column;
+      padding:80px 28px 28px;
+      gap:6px;
+      transform:translateX(100%);
+      transition:transform .3s cubic-bezier(.65,0,.35,1);
+      box-shadow:-20px 0 40px rgba(0,0,0,.35);
+    }
+
+    .nav-menu.open{
+      transform:translateX(0);
+    }
+
+    .nav-close{
+      position:absolute;
+      top:20px;
+      right:20px;
+      width:36px;
+      height:36px;
+      border:1px solid #334155;
+      border-radius:10px;
+      background:transparent;
+      color:#cbd5e1;
+      font-size:20px;
+      line-height:1;
+      cursor:pointer;
+    }
+
+    .nav-link{
+      display:block;
+      padding:14px 12px;
+      border-radius:10px;
+      color:#cbd5e1;
+      text-decoration:none;
+      font-size:15px;
+      letter-spacing:.05em;
+      border:1px solid transparent;
+      transition:background .2s ease, color .2s ease, border-color .2s ease;
+    }
+
+    .nav-link.active{
+      color:#f8fafc;
+      background:rgba(59,130,246,.12);
+      border-color:rgba(96,165,250,.3);
+    }
+
+    .nav-link:hover{
+      color:#f8fafc;
+      background:rgba(59,130,246,.08);
+    }
+
+    /* 画面（ホーム／ニュース）切り替え */
+    .view{ display:none; }
+    .view.active{
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      width:100%;
+    }
+
+    .news-title{
+      font-size:clamp(1.6rem, 6vw, 2.4rem);
+      font-weight:700;
+      letter-spacing:.08em;
+      margin:8px 0 30px;
+      color:#f8fafc;
+      text-shadow:0 0 10px rgba(96,165,250,.18);
+    }
+
+    .news-list{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:14px;
+    }
+
+    .news-empty{
+      padding:28px 20px;
+      border:1px dashed rgba(148,163,184,.3);
+      border-radius:16px;
+      color:#94a3b8;
+      font-size:14px;
+      line-height:1.8;
+      background:rgba(17,24,39,.5);
+    }
+
+    /* ページ共通見出し */
+    .page-title{
+      font-size:clamp(1.6rem, 6vw, 2.4rem);
+      font-weight:700;
+      letter-spacing:.08em;
+      margin:8px 0 30px;
+      color:#f8fafc;
+      text-shadow:0 0 10px rgba(96,165,250,.18);
+    }
+
+    .page-lead{
+      color:#94a3b8;
+      font-size:13px;
+      line-height:1.9;
+      margin:0 0 26px;
+    }
+
+    /* HOME以外のページ用フェードイン演出（JSでクラス付与） */
+    .fade-target{
+      opacity:0;
+      transform:translateY(14px);
+    }
+
+    .fade-target.page-fade-in{
+      animation:fadeInUp .7s ease forwards;
+    }
+
+    /* キャラクター紹介 */
+    .character-grid{
+      width:100%;
+      display:grid;
+      grid-template-columns:repeat(auto-fit, minmax(140px, 1fr));
+      gap:14px;
+    }
+
+    .character-card{
+      padding:26px 14px;
+      border:1px solid rgba(148,163,184,.22);
+      border-radius:16px;
+      background:rgba(17,24,39,.5);
+      display:flex;
+      flex-direction:column;
+      align-items:center;
+      gap:10px;
+    }
+
+    .character-avatar{
+      width:56px;
+      height:56px;
+      border-radius:50%;
+      border:1px solid rgba(96,165,250,.3);
+      background:radial-gradient(circle, rgba(96,165,250,.22), rgba(11,16,32,0));
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:12px;
+      color:#93c5fd;
+      letter-spacing:.05em;
+    }
+
+    .character-card-name{
+      font-size:13px;
+      color:#cbd5e1;
+      letter-spacing:.05em;
+    }
+
+    /* 世界観・ストーリー */
+    .story-block{
+      width:100%;
+      text-align:left;
+      padding:24px 22px;
+      border:1px solid rgba(148,163,184,.2);
+      border-radius:16px;
+      background:rgba(17,24,39,.5);
+      color:#cbd5e1;
+      font-size:14px;
+      line-height:2;
+    }
+
+    .story-block + .story-block{
+      margin-top:14px;
+    }
+
+    .story-block h3{
+      margin:0 0 10px;
+      font-size:14px;
+      letter-spacing:.14em;
+      color:#93c5fd;
+    }
+
+    /* FAQ */
+    .faq-list{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:10px;
+    }
+
+    .faq-item{
+      border:1px solid rgba(148,163,184,.2);
+      border-radius:14px;
+      background:rgba(17,24,39,.5);
+      overflow:hidden;
+      text-align:left;
+    }
+
+    .faq-question{
+      width:100%;
+      display:flex;
+      justify-content:space-between;
+      align-items:center;
+      gap:12px;
+      padding:16px 18px;
+      background:transparent;
+      border:none;
+      color:#f8fafc;
+      font-family:inherit;
+      font-size:14px;
+      letter-spacing:.03em;
+      cursor:pointer;
+      text-align:left;
+    }
+
+    .faq-question .faq-icon{
+      flex-shrink:0;
+      width:20px;
+      height:20px;
+      border:1px solid #334155;
+      border-radius:50%;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      font-size:13px;
+      color:#93c5fd;
+      transition:transform .25s ease;
+    }
+
+    .faq-item.open .faq-icon{
+      transform:rotate(45deg);
+    }
+
+    .faq-answer{
+      max-height:0;
+      overflow:hidden;
+      transition:max-height .3s ease;
+    }
+
+    .faq-answer p{
+      margin:0;
+      padding:0 18px 18px;
+      color:#94a3b8;
+      font-size:13px;
+      line-height:1.9;
+    }
+
+    /* お問い合わせ */
+    .contact-block{
+      width:100%;
+      padding:26px 22px;
+      border:1px solid rgba(148,163,184,.2);
+      border-radius:16px;
+      background:rgba(17,24,39,.5);
+      color:#cbd5e1;
+      font-size:14px;
+      line-height:2;
+    }
+
+    .contact-mail{
+      display:inline-block;
+      margin-top:14px;
+      padding:12px 26px;
+      border:1px solid rgba(96,165,250,.3);
+      border-radius:999px;
+      color:#f8fafc;
+      text-decoration:none;
+      font-size:13px;
+      letter-spacing:.05em;
+      transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease;
+    }
+
+    .contact-mail:hover{
+      border-color:#60a5fa;
+      box-shadow:0 0 14px rgba(96,165,250,.3);
+      transform:translateY(-2px);
+    }
+
+    /* お問い合わせフォーム */
+    .contact-form{
+      width:100%;
+      display:flex;
+      flex-direction:column;
+      gap:16px;
+      text-align:left;
+    }
+
+    .contact-form label{
+      display:block;
+      font-size:12px;
+      letter-spacing:.08em;
+      color:#93c5fd;
+      margin-bottom:6px;
+    }
+
+    .contact-form input,
+    .contact-form textarea{
+      width:100%;
+      padding:12px 14px;
+      border-radius:10px;
+      border:1px solid #334155;
+      background:rgba(15,23,42,.6);
+      color:#f8fafc;
+      font-family:inherit;
+      font-size:14px;
+      box-sizing:border-box;
+      resize:vertical;
+      transition:border-color .2s ease, box-shadow .2s ease;
+    }
+
+    .contact-form textarea{
+      min-height:140px;
+      line-height:1.7;
+    }
+
+    .contact-form input:focus,
+    .contact-form textarea:focus{
+      outline:none;
+      border-color:#60a5fa;
+      box-shadow:0 0 0 3px rgba(96,165,250,.15);
+    }
+
+    .contact-submit{
+      align-self:flex-start;
+      padding:12px 30px;
+      border-radius:999px;
+      border:1px solid rgba(96,165,250,.35);
+      background:rgba(59,130,246,.14);
+      color:#f8fafc;
+      font-family:inherit;
+      font-size:13px;
+      letter-spacing:.08em;
+      cursor:pointer;
+      transition:border-color .2s ease, box-shadow .2s ease, transform .2s ease, opacity .2s ease;
+    }
+
+    .contact-submit:hover:not(:disabled){
+      border-color:#60a5fa;
+      box-shadow:0 0 14px rgba(96,165,250,.3);
+      transform:translateY(-2px);
+    }
+
+    .contact-submit:disabled{
+      opacity:.5;
+      cursor:not-allowed;
+    }
+
+    .contact-status{
+      min-height:18px;
+      font-size:13px;
+      letter-spacing:.03em;
+      color:#94a3b8;
+    }
+
+    .contact-status.success{ color:#86efac; }
+    .contact-status.error{ color:#fca5a5; }
+
     /* 初期フラッシュ演出：白い光→中央の発光位置へ収束 */
     #intro-flash{
       position:fixed;
@@ -342,7 +890,23 @@
   <canvas id="starfield"></canvas>
   <div id="intro-flash"></div>
 
-  <div class="container">
+  <button id="menuToggle" class="menu-toggle" aria-label="メニューを開く" aria-expanded="false">
+    <span></span><span></span><span></span>
+  </button>
+
+  <div id="navOverlay" class="nav-overlay"></div>
+
+  <nav id="navMenu" class="nav-menu" aria-hidden="true">
+    <button id="navClose" class="nav-close" aria-label="メニューを閉じる">×</button>
+    <a href="#" class="nav-link active" data-view="home">HOME</a>
+    <a href="#" class="nav-link" data-view="news">NEWS</a>
+    <a href="#" class="nav-link" data-view="character">CHARACTER</a>
+    <a href="#" class="nav-link" data-view="story">STORY</a>
+    <a href="#" class="nav-link" data-view="faq">FAQ</a>
+    <a href="#" class="nav-link" data-view="contact">お問い合わせ</a>
+  </nav>
+
+  <div id="view-home" class="view active container">
     <div class="studio">Arcana Record Games</div>
 
     <div class="project">PROJECT STARTED</div>
@@ -371,8 +935,140 @@
       </a>
     </div>
 
+    <!-- シェア項目 -->
+    <div class="share-section">
+      <div class="share-label">このページをシェア</div>
+      <div class="share-links">
+        <a id="shareX" href="#" target="_blank" rel="noopener noreferrer" aria-label="Xでシェア">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18.9 2H22l-7.6 8.7L23.3 22h-6.9l-5.4-6.6L4.8 22H1.6l8.2-9.3L1 2h7.1l4.9 6.1L18.9 2zm-1.2 18h1.9L7.4 4H5.4l12.3 16z"/>
+          </svg>
+        </a>
+        <a id="shareLine" href="#" target="_blank" rel="noopener noreferrer" aria-label="LINEでシェア">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M12 2C6.48 2 2 5.69 2 10.24c0 4.08 3.56 7.49 8.37 8.14.33.07.77.22.88.5.1.26.07.66.03.92l-.14.86c-.04.26-.2 1 .87.55 1.08-.46 5.8-3.42 7.92-5.85C21.34 13.47 22 11.94 22 10.24 22 5.69 17.52 2 12 2zM8.5 12.85H6.9c-.24 0-.44-.2-.44-.44V9.03c0-.24.2-.44.44-.44s.44.2.44.44v2.94h1.16c.24 0 .44.2.44.44s-.2.44-.44.44zm1.94-.44c0 .24-.2.44-.44.44s-.44-.2-.44-.44V9.03c0-.24.2-.44.44-.44s.44.2.44.44v3.38zm4.36 0c0 .19-.12.35-.3.42-.05.02-.1.03-.15.03-.15 0-.28-.07-.36-.18l-1.75-2.38v2.11c0 .24-.2.44-.44.44s-.44-.2-.44-.44V9.03c0-.19.12-.35.3-.42.05-.02.1-.03.15-.03.14 0 .27.07.36.18l1.75 2.38V9.03c0-.24.2-.44.44-.44s.44.2.44.44v3.38zm3.2-1.96c.24 0 .44.2.44.44s-.2.44-.44.44H16.6v.64h1.4c.24 0 .44.2.44.44s-.2.44-.44.44h-1.84c-.24 0-.44-.2-.44-.44V9.03c0-.24.2-.44.44-.44h1.84c.24 0 .44.2.44.44s-.2.44-.44.44h-1.4v.64h1.4z"/>
+          </svg>
+        </a>
+        <button id="shareCopy" type="button" aria-label="リンクをコピー">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M16 1H4a2 2 0 0 0-2 2v14h2V3h12V1zm3 4H8a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h11a2 2 0 0 0 2-2V7a2 2 0 0 0-2-2zm0 16H8V7h11v14z"/>
+          </svg>
+        </button>
+        <button id="shareNative" type="button" aria-label="その他の方法でシェア">
+          <svg viewBox="0 0 24 24" aria-hidden="true">
+            <path d="M18 16.08c-.76 0-1.44.3-1.96.77L8.91 12.7c.05-.23.09-.46.09-.7s-.04-.47-.09-.7l7.05-4.11c.54.5 1.25.81 2.04.81a3 3 0 1 0-3-3c0 .24.04.47.09.7L7.04 9.81A2.99 2.99 0 0 0 2 12a3 3 0 0 0 5.04 2.19l7.12 4.15c-.05.21-.08.43-.08.66a2.92 2.92 0 1 0 2.92-2.92z"/>
+          </svg>
+        </button>
+      </div>
+    </div>
+
     <div class="copyright">© Arcana Record Games</div>
   </div>
+
+  <div id="view-news" class="view container">
+    <div class="studio fade-target">Arcana Record Games</div>
+    <h2 class="page-title fade-target">ニュース</h2>
+    <div class="news-list">
+      <div class="news-empty">現在お知らせはありません。<br>新着情報が入り次第、こちらに掲載します。</div>
+    </div>
+  </div>
+
+  <div id="view-character" class="view container">
+    <div class="studio fade-target">Arcana Record Games</div>
+    <h2 class="page-title fade-target">キャラクター紹介</h2>
+    <p class="page-lead">キャラクター情報は近日公開予定です。準備が整い次第、順次こちらで紹介していきます。</p>
+    <div class="character-grid">
+      <div class="character-card">
+        <div class="character-avatar">???</div>
+        <div class="character-card-name">近日公開</div>
+      </div>
+      <div class="character-card">
+        <div class="character-avatar">???</div>
+        <div class="character-card-name">近日公開</div>
+      </div>
+      <div class="character-card">
+        <div class="character-avatar">???</div>
+        <div class="character-card-name">近日公開</div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-story" class="view container">
+    <div class="studio fade-target">Arcana Record Games</div>
+    <h2 class="page-title fade-target">世界観・ストーリー</h2>
+    <p class="page-lead">『アルカナレコード』の世界観・ストーリー詳細は現在準備中です。公開までしばらくお待ちください。</p>
+    <div class="story-block">
+      <h3>WORLD</h3>
+      詳細は近日公開予定です。
+    </div>
+    <div class="story-block">
+      <h3>STORY</h3>
+      詳細は近日公開予定です。
+    </div>
+  </div>
+
+  <div id="view-faq" class="view container">
+    <div class="studio fade-target">Arcana Record Games</div>
+    <h2 class="page-title fade-target">FAQ</h2>
+    <div class="faq-list">
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>『アルカナレコード』とはどんな作品ですか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-answer">
+          <p>現在開発中のタイトルです。詳しい情報は準備が整い次第、公式サイトおよび公式SNSにて順次公開いたします。</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>観測者コードとは何ですか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-answer">
+          <p>サイトにアクセスした際に、端末ごとに割り振られる識別番号です。詳しい用途については今後の情報公開をお待ちください。</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>発売時期はいつですか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-answer">
+          <p>現時点では未定です。決定次第、公式X・公式YouTubeおよび本サイトのニュースにてお知らせします。</p>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button">
+          <span>最新情報はどこで確認できますか？</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-answer">
+          <p>本サイトの「ニュース」ページ、または公式X・公式YouTubeにて随時発信していきます。</p>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-contact" class="view container">
+    <div class="studio fade-target">Arcana Record Games</div>
+    <h2 class="page-title fade-target">お問い合わせ</h2>
+    <p class="page-lead">本作品に関するお問い合わせは、以下のフォームよりご連絡ください。内容を確認の上、担当より順次ご対応いたします。</p>
+    <form id="contactForm" class="contact-form" novalidate>
+      <div>
+        <label for="contactSubject">件名</label>
+        <input type="text" id="contactSubject" name="subject" maxlength="100" placeholder="お問い合わせの件名をご記入ください">
+      </div>
+      <div>
+        <label for="contactMessage">内容</label>
+        <textarea id="contactMessage" name="message" maxlength="2000" placeholder="お問い合わせ内容をご記入ください"></textarea>
+      </div>
+      <button type="submit" class="contact-submit" id="contactSubmit">送信する</button>
+      <div id="contactStatus" class="contact-status" role="status" aria-live="polite"></div>
+    </form>
+  </div>
+
+  <div id="copy-toast">リンクをコピーしました</div>
 
   <script>
     const canvas = document.getElementById('starfield');
@@ -612,6 +1308,235 @@ window.addEventListener('load', () => {
     }, 180);
   }, 2600); // subtitleの2.25sより少し後
 });
+
+// ハンバーガーメニュー・画面切り替え
+(function initNav(){
+  const toggle = document.getElementById('menuToggle');
+  const menu = document.getElementById('navMenu');
+  const overlay = document.getElementById('navOverlay');
+  const closeBtn = document.getElementById('navClose');
+  const links = document.querySelectorAll('.nav-link');
+  const views = document.querySelectorAll('.view');
+
+  function openMenu(){
+    menu.classList.add('open');
+    overlay.classList.add('show');
+    toggle.classList.add('active');
+    toggle.setAttribute('aria-expanded', 'true');
+    menu.setAttribute('aria-hidden', 'false');
+  }
+
+  function closeMenu(){
+    menu.classList.remove('open');
+    overlay.classList.remove('show');
+    toggle.classList.remove('active');
+    toggle.setAttribute('aria-expanded', 'false');
+    menu.setAttribute('aria-hidden', 'true');
+  }
+
+  toggle.addEventListener('click', () => {
+    if(menu.classList.contains('open')){
+      closeMenu();
+    } else {
+      openMenu();
+    }
+  });
+
+  overlay.addEventListener('click', closeMenu);
+  closeBtn.addEventListener('click', closeMenu);
+
+  document.addEventListener('keydown', (e) => {
+    if(e.key === 'Escape') closeMenu();
+  });
+
+  function playFadeIn(view){
+    const targets = view.querySelectorAll('.fade-target');
+    targets.forEach((el, i) => {
+      el.classList.remove('page-fade-in');
+      // リフローを強制して、アニメーションを確実に再生させる
+      void el.offsetWidth;
+      el.style.animationDelay = `${i * 0.15}s`;
+      el.classList.add('page-fade-in');
+    });
+  }
+
+  function switchView(viewName){
+    views.forEach(v => v.classList.toggle('active', v.id === `view-${viewName}`));
+    links.forEach(l => l.classList.toggle('active', l.dataset.view === viewName));
+    window.scrollTo({ top: 0 });
+
+    if(viewName !== 'home'){
+      const activeView = document.getElementById(`view-${viewName}`);
+      if(activeView) playFadeIn(activeView);
+    }
+  }
+
+  links.forEach(link => {
+    link.addEventListener('click', (e) => {
+      e.preventDefault();
+      switchView(link.dataset.view);
+      closeMenu();
+    });
+  });
+})();
+
+// お問い合わせフォーム送信
+(function initContactForm(){
+  const form = document.getElementById('contactForm');
+  if(!form) return;
+
+  const submitBtn = document.getElementById('contactSubmit');
+  const status = document.getElementById('contactStatus');
+  const subjectField = document.getElementById('contactSubject');
+  const messageField = document.getElementById('contactMessage');
+
+  // ▼▼▼ ここをFormspree等で発行された自分のフォームエンドポイントに差し替えてください ▼▼▼
+  const FORM_ENDPOINT = 'https://formspree.io/f/xwvgrbka';
+  // ▲▲▲ ここまで ▲▲▲
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+
+    status.textContent = '';
+    status.className = 'contact-status';
+
+    const subject = subjectField.value.trim();
+    const message = messageField.value.trim();
+
+    if(!subject || !message){
+      status.textContent = '件名と内容を入力してください。';
+      status.classList.add('error');
+      return;
+    }
+
+    submitBtn.disabled = true;
+    submitBtn.textContent = '送信中...';
+
+    try{
+      const res = await fetch(FORM_ENDPOINT, {
+        method: 'POST',
+        headers: { 'Accept': 'application/json' },
+        body: new FormData(form)
+      });
+
+      if(res.ok){
+        status.textContent = 'お問い合わせを送信しました。ありがとうございます。';
+        status.classList.add('success');
+        form.reset();
+      } else {
+        throw new Error('送信に失敗しました');
+      }
+    } catch(err){
+      status.textContent = '送信に失敗しました。時間をおいて再度お試しください。';
+      status.classList.add('error');
+    } finally {
+      submitBtn.disabled = false;
+      submitBtn.textContent = '送信する';
+    }
+  });
+})();
+
+// FAQアコーディオン
+(function initFaq(){
+  const items = document.querySelectorAll('.faq-item');
+  items.forEach(item => {
+    const question = item.querySelector('.faq-question');
+    const answer = item.querySelector('.faq-answer');
+    question.addEventListener('click', () => {
+      const isOpen = item.classList.contains('open');
+      items.forEach(other => {
+        other.classList.remove('open');
+        other.querySelector('.faq-answer').style.maxHeight = null;
+      });
+      if(!isOpen){
+        item.classList.add('open');
+        answer.style.maxHeight = answer.scrollHeight + 'px';
+      }
+    });
+  });
+})();
+
+// シェア機能
+(function initShare(){
+  const pageUrl = window.location.href;
+  const pageTitle = document.title;
+  const officialUrl = 'https://arcanarecordgames.com/';
+  const observerId = document.getElementById('observerId').textContent;
+  const shareText = `私の観測者コード［${observerId}］\n\n『アルカナレコード』シリーズ開発中\n#アルカナレコード\n【公式サイト】\n${officialUrl}`;
+
+  // X（Twitter）でシェア
+  const shareX = document.getElementById('shareX');
+  if(shareX){
+    const params = new URLSearchParams({ text: shareText });
+    shareX.href = `https://twitter.com/intent/tweet?${params.toString()}`;
+  }
+
+  // LINEでシェア
+  const shareLine = document.getElementById('shareLine');
+  if(shareLine){
+    const lineText = `私の観測者コード［${observerId}］\n\n『アルカナレコード』シリーズ開発中\n【公式サイト】\n${officialUrl}`;
+    shareLine.href = `https://line.me/R/msg/text/?${encodeURIComponent(lineText)}`;
+  }
+
+  // リンクをコピー
+  const shareCopy = document.getElementById('shareCopy');
+  const toast = document.getElementById('copy-toast');
+  let toastTimer = null;
+
+  function showToast(message){
+    toast.textContent = message;
+    toast.classList.add('show');
+    if(toastTimer) clearTimeout(toastTimer);
+    toastTimer = setTimeout(() => {
+      toast.classList.remove('show');
+    }, 2200);
+  }
+
+  if(shareCopy){
+    shareCopy.addEventListener('click', async () => {
+      try{
+        if(navigator.clipboard && navigator.clipboard.writeText){
+          await navigator.clipboard.writeText(pageUrl);
+        } else {
+          // フォールバック（Clipboard APIが使えない環境向け）
+          const textarea = document.createElement('textarea');
+          textarea.value = pageUrl;
+          textarea.style.position = 'fixed';
+          textarea.style.opacity = '0';
+          document.body.appendChild(textarea);
+          textarea.focus();
+          textarea.select();
+          document.execCommand('copy');
+          document.body.removeChild(textarea);
+        }
+        showToast('リンクをコピーしました');
+      } catch(err){
+        showToast('コピーに失敗しました');
+      }
+    });
+  }
+
+  // 端末のネイティブ共有（対応環境のみボタン表示）
+  const shareNative = document.getElementById('shareNative');
+  if(shareNative){
+    if(navigator.share){
+      shareNative.addEventListener('click', async () => {
+        try{
+          await navigator.share({
+            title: pageTitle,
+            text: shareText,
+            url: pageUrl
+          });
+        } catch(err){
+          // ユーザーがキャンセルした場合などは何もしない
+        }
+      });
+    } else {
+      // 非対応環境では非表示にする
+      shareNative.style.display = 'none';
+    }
+  }
+})();
   </script>
 </body>
 </html>
