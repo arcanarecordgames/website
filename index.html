@@ -721,6 +721,70 @@
       line-height:1.9;
     }
 
+    /* FAQ：名前の由来（カード形式） */
+    .origin-content{
+      display:flex;
+      flex-direction:column;
+      gap:12px;
+      padding:0 18px 18px;
+    }
+
+    .origin-block{
+      text-align:left;
+      padding:16px 18px;
+      border-left:2px solid rgba(96,165,250,.45);
+      border-radius:0 12px 12px 0;
+      background:rgba(15,23,42,.45);
+    }
+
+    .origin-term{
+      display:flex;
+      align-items:baseline;
+      gap:8px;
+      margin-bottom:8px;
+    }
+
+    .origin-term-en{
+      font-size:15px;
+      font-weight:700;
+      color:#f8fafc;
+      letter-spacing:.04em;
+    }
+
+    .origin-term-jp{
+      font-size:12px;
+      color:#93c5fd;
+    }
+
+    .origin-text{
+      margin:0;
+      font-size:13px;
+      color:#94a3b8;
+      line-height:1.9;
+    }
+
+    .origin-meaning{
+      text-align:left;
+      padding:18px;
+      border-radius:14px;
+      border:1px solid rgba(96,165,250,.28);
+      background:linear-gradient(135deg, rgba(59,130,246,.16), rgba(15,23,42,.55));
+    }
+
+    .origin-meaning-title{
+      font-size:11px;
+      letter-spacing:.18em;
+      color:#93c5fd;
+      margin-bottom:10px;
+    }
+
+    .origin-meaning-text{
+      margin:0;
+      font-size:13px;
+      color:#e2e8f0;
+      line-height:1.9;
+    }
+
     /* お問い合わせ */
     .contact-block{
       width:100%;
@@ -1013,6 +1077,34 @@
     <div class="faq-list">
       <div class="faq-item">
         <button class="faq-question" type="button">
+          <span>『アルカナレコード』という名前の由来について</span>
+          <span class="faq-icon">＋</span>
+        </button>
+        <div class="faq-answer">
+          <div class="origin-content">
+            <div class="origin-block fade-target">
+              <div class="origin-term">
+                <span class="origin-term-en">Arcana</span>
+                <span class="origin-term-jp">（アルカナ）</span>
+              </div>
+              <p class="origin-text">「Arcana」はラテン語の arcanum に由来し、「秘術」「奥義」「隠された真実」を意味する言葉。この物語では、人々がまだ知らない魔法の真実、世界の裏側に存在する秘密、解き明かされていない禁忌などを象徴している。</p>
+            </div>
+            <div class="origin-block fade-target">
+              <div class="origin-term">
+                <span class="origin-term-en">Record</span>
+                <span class="origin-term-jp">（レコード）</span>
+              </div>
+              <p class="origin-text">「Record」は「記録」「記憶」「履歴」を意味する。物語の中では、魔法の研究記録・失われた文明の記録・人々の記憶や想い・世界に刻まれた歴史など、あらゆる"残されたもの"を表す言葉として用いられる。</p>
+            </div>
+            <div class="origin-meaning fade-target">
+              <div class="origin-meaning-title">タイトルに込めた意味</div>
+              <p class="origin-meaning-text">「アルカナ（隠された真実）」と「レコード（記録）」を組み合わせることで、『世界に残された秘術と記録を辿り、真実へと近づいていく物語』という意味を持つタイトルとして名付けた。また、"レコード"には音楽のレコードのように、過去の出来事を再生する、忘れられた記憶を呼び起こす、失われた声をもう一度響かせるというイメージも重ねられている。</p>
+            </div>
+          </div>
+        </div>
+      </div>
+      <div class="faq-item">
+        <button class="faq-question" type="button">
           <span>『アルカナレコード』とはどんな作品ですか？</span>
           <span class="faq-icon">＋</span>
         </button>
@@ -1053,11 +1145,16 @@
   <div id="view-contact" class="view container">
     <div class="studio fade-target">Arcana Record Games</div>
     <h2 class="page-title fade-target">お問い合わせ</h2>
-    <p class="page-lead">本作品に関するお問い合わせは、以下のフォームよりご連絡ください。内容を確認の上、担当より順次ご対応いたします。</p>
+    <p class="page-lead">本作品に関するお問い合わせは、以下のフォームよりご連絡ください。内容を確認の上、担当より順次ご対応いたします。<br>
+    ※「返信用メールアドレス」が未記入の場合、内容の確認のみとなり、個別の返信はできませんのでご了承ください。</p>
     <form id="contactForm" class="contact-form" novalidate>
       <div>
         <label for="contactSubject">件名</label>
         <input type="text" id="contactSubject" name="subject" maxlength="100" placeholder="お問い合わせの件名をご記入ください">
+      </div>
+      <div>
+        <label for="contactEmail">返信用メールアドレス（任意）</label>
+        <input type="email" id="contactEmail" name="email" maxlength="200" placeholder="返信をご希望の場合はご記入ください">
       </div>
       <div>
         <label for="contactMessage">内容</label>
@@ -1389,6 +1486,7 @@ window.addEventListener('load', () => {
   const status = document.getElementById('contactStatus');
   const subjectField = document.getElementById('contactSubject');
   const messageField = document.getElementById('contactMessage');
+  const emailField = document.getElementById('contactEmail');
 
   // ▼▼▼ ここをFormspree等で発行された自分のフォームエンドポイントに差し替えてください ▼▼▼
   const FORM_ENDPOINT = 'https://formspree.io/f/xwvgrbka';
@@ -1402,9 +1500,16 @@ window.addEventListener('load', () => {
 
     const subject = subjectField.value.trim();
     const message = messageField.value.trim();
+    const email = emailField.value.trim();
 
     if(!subject || !message){
       status.textContent = '件名と内容を入力してください。';
+      status.classList.add('error');
+      return;
+    }
+
+    if(email && !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email)){
+      status.textContent = 'メールアドレスの形式をご確認ください。';
       status.classList.add('error');
       return;
     }
@@ -1439,6 +1544,17 @@ window.addEventListener('load', () => {
 // FAQアコーディオン
 (function initFaq(){
   const items = document.querySelectorAll('.faq-item');
+
+  function playOriginFade(item){
+    const targets = item.querySelectorAll('.fade-target');
+    targets.forEach((el, i) => {
+      el.classList.remove('page-fade-in');
+      void el.offsetWidth;
+      el.style.animationDelay = `${i * 0.12}s`;
+      el.classList.add('page-fade-in');
+    });
+  }
+
   items.forEach(item => {
     const question = item.querySelector('.faq-question');
     const answer = item.querySelector('.faq-answer');
@@ -1450,7 +1566,14 @@ window.addEventListener('load', () => {
       });
       if(!isOpen){
         item.classList.add('open');
+        playOriginFade(item);
+        // フェードイン演出の分、少し遅れて実寸に合わせて高さを再計算
         answer.style.maxHeight = answer.scrollHeight + 'px';
+        setTimeout(() => {
+          if(item.classList.contains('open')){
+            answer.style.maxHeight = answer.scrollHeight + 'px';
+          }
+        }, 400);
       }
     });
   });
