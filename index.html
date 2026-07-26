@@ -1563,7 +1563,7 @@
       <div class="mail-lock-title">LOCKED</div>
       <div class="mail-lock-sub">観測者コードを入力してください</div>
       <div class="error-code-box">
-        <input type="text" id="mailLockInput" class="error-code-input" placeholder="観測者コードを入力" autocomplete="off">
+        <input type="text" id="mailLockInput" class="error-code-input" placeholder="観測者コードを入力"  maxlength="13" autocomplete="off">
         <button type="button" id="mailLockConfirm" class="error-confirm-btn">確認</button>
         <div id="mailLockMismatch" class="error-mismatch"></div>
       </div>
@@ -1658,7 +1658,16 @@
     <div class="studio fade-target">Arcana Record Games</div>
     <h2 class="page-title fade-target">ニュース</h2>
     <div class="news-list">
-      <div class="news-empty">現在お知らせはありません。<br>新着情報が入り次第、こちらに掲載します。</div>
+           <div class="story-block">
+        <h3>2026.07.22</h3>
+        公式X（旧Twitter）を開設しました。開発の進捗や最新情報をいち早くお届けしていきますので、ぜひフォローして今後の更新をお見逃しなく。<br>
+        <a href="https://x.com/arcanarecord" target="_blank" rel="noopener noreferrer" class="contact-mail" style="margin-top:12px;">公式Xをフォローする</a>
+      </div>
+      <div class="story-block">
+        <h3>2026.07.22</h3>
+        公式YouTubeチャンネルを開設しました。今後、映像コンテンツを順次公開していく予定です。チャンネル登録をしていただくと、新着動画をいち早くチェックできます。<br>
+        <a href="https://www.youtube.com/@arcanarecord" target="_blank" rel="noopener noreferrer" class="contact-mail" style="margin-top:12px;">公式YouTubeを登録する</a>
+      </div>
     </div>
   </div>
 
@@ -1859,8 +1868,8 @@
     <h2 class="error-page-title fade-target">ERROR</h2>
     <p class="error-page-sub fade-target">[ 未確認領域 ]<br>アクセス権限外のデータを検出しました。</p>
     <div class="error-code-box fade-target">
-      <input type="text" id="errorCodeInput" class="error-code-input" placeholder="観測者コードを入力" maxlength="20" autocomplete="off">
-      <button type="button" id="errorConfirmBtn" class="error-confirm-btn">確定</button>
+      <input type="text" id="errorCodeInput" class="error-code-input" placeholder="観測者コードを入力" maxlength="13" autocomplete="off">
+      <button type="button" id="errorConfirmBtn" class="error-confirm-btn">ENTER</button>
       <div id="errorMismatch" class="error-mismatch"></div>
     </div>
     <div id="errorResult" class="error-result"></div>
@@ -1889,6 +1898,19 @@
     function getSuffix(id){
       const m = id.match(/-([0-9A-F]{4})$/i);
       return m ? m[1].toUpperCase() : '0000';
+    }
+
+    // 観測者コード入力欄：自動整形（大文字化＋ハイフン自動挿入）
+    function formatObserverCodeInput(el){
+      el.addEventListener('input', () => {
+        let raw = el.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+        raw = raw.slice(0, 11); // AR(2) + 26312(5) + XXXX(4) = 11文字
+        let formatted = '';
+        if(raw.length > 0) formatted += raw.slice(0, 2);
+        if(raw.length > 2) formatted += '-' + raw.slice(2, 7);
+        if(raw.length > 7) formatted += '-' + raw.slice(7, 11);
+        el.value = formatted;
+      });
     }
 
     function computeType(hex4){
@@ -2774,6 +2796,8 @@ window.addEventListener('load', () => {
   const errorMismatch = document.getElementById('errorMismatch');
   const errorResult = document.getElementById('errorResult');
 
+formatObserverCodeInput(errorInput);
+
   function addResultLine(text, container){
     const div = document.createElement('div');
     div.className = 'error-progress-line';
@@ -2903,6 +2927,8 @@ window.addEventListener('load', () => {
   const mailEnvelopeIcon = document.getElementById('mailEnvelopeIcon');
 
   if(!mailIconBtn || !mailOverlay) return;
+
+formatObserverCodeInput(mailLockInput);
 
   let lastInteractionAt = Date.now();
   let idleMailShown = false;
@@ -3265,7 +3291,7 @@ window.addEventListener('load', () => {
 })();
 
 // バージョン情報（コンソールでのみ確認可能）
-console.log('%cArcana Record Games %cver 1.0.31', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
+console.log('%cArcana Record Games %cver 1.0.32', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
