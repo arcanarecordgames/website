@@ -509,6 +509,7 @@
     }
 
     .nav-link{
+      position:relative;
       display:block;
       padding:14px 12px;
       border-radius:10px;
@@ -519,6 +520,21 @@
       border:1px solid transparent;
       transition:background .2s ease, color .2s ease, border-color .2s ease;
     }
+
+/* NEWS未読通知バッジ */
+.news-badge{
+  display:none;
+  position:absolute;
+  top:10px;
+  right:12px;
+  width:8px;
+  height:8px;
+  border-radius:50%;
+  background:#f87171;
+  animation:mailPulse 1.6s ease-in-out infinite;
+}
+
+.news-badge.show{ display:block; }
 
     .nav-link.active{
       color:#f8fafc;
@@ -1584,13 +1600,13 @@
   <nav id="navMenu" class="nav-menu" aria-hidden="true">
     <button id="navClose" class="nav-close" aria-label="メニューを閉じる">×</button>
     <a href="#" class="nav-link active" data-view="home">HOME</a>
-    <a href="#" class="nav-link" data-view="news">NEWS</a>
+    <a href="#" class="nav-link" data-view="news">NEWS<span class="news-badge" id="newsBadge"></span></a>
     <a href="#" class="nav-link" data-view="character">CHARACTER</a>
     <a href="#" class="nav-link" data-view="story">STORY</a>
     <a href="#" class="nav-link archive-link" data-view="archive" id="navArchiveLink" style="display:none;">ARCHIVE</a>
     <a href="#" class="nav-link" data-view="faq">FAQ</a>
     <a href="#" class="nav-link" data-view="contact">お問い合わせ</a>
-    <a href="#" class="nav-link error-link" data-view="error" id="navErrorLink" style="display:none;">ERROR</a>
+    <a href="#" class="nav-link error-link"  data-view="error" id="navErrorLink" style="display:none;">ERROR</a>
   </nav>
 
   <div id="view-home" class="view active container">
@@ -3290,8 +3306,35 @@ formatObserverCodeInput(mailLockInput);
   }
 })();
 
+// NEWS未読通知バッジ
+// ニュースを追加したら、この日付を最新の日付に更新してください
+const LATEST_NEWS_DATE = '2026-07-22';
+
+(function initNewsBadge(){
+  const STORAGE_KEY = 'ar_last_seen_news';
+  const badge = document.getElementById('newsBadge');
+  const newsLink = document.querySelector('.nav-link[data-view="news"]');
+  if(!badge || !newsLink) return;
+
+  function checkUnread(){
+    const lastSeen = localStorage.getItem(STORAGE_KEY);
+    if(lastSeen !== LATEST_NEWS_DATE){
+      badge.classList.add('show');
+    } else {
+      badge.classList.remove('show');
+    }
+  }
+
+  checkUnread();
+
+  newsLink.addEventListener('click', () => {
+    localStorage.setItem(STORAGE_KEY, LATEST_NEWS_DATE);
+    badge.classList.remove('show');
+  });
+})();
+
 // バージョン情報（コンソールでのみ確認可能）
-console.log('%cArcana Record Games %cver 1.0.32', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
+console.log('%cArcana Record Games %cver 1.0.33', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
