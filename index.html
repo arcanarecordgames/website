@@ -1001,11 +1001,6 @@
       margin-top:26px;
     }
 
-    /* ARCHIVEメニュー項目 */
-    .nav-link.archive-link{
-      margin-top:12px;
-    }
-
     /* ARCHIVEページ */
     .archive-item .faq-question span:first-child{
       display:flex;
@@ -1592,10 +1587,10 @@
     <a href="#" class="nav-link" data-view="news">NEWS</a>
     <a href="#" class="nav-link" data-view="character">CHARACTER</a>
     <a href="#" class="nav-link" data-view="story">STORY</a>
+    <a href="#" class="nav-link archive-link" data-view="archive" id="navArchiveLink" style="display:none;">ARCHIVE</a>
     <a href="#" class="nav-link" data-view="faq">FAQ</a>
     <a href="#" class="nav-link" data-view="contact">お問い合わせ</a>
     <a href="#" class="nav-link error-link" data-view="error" id="navErrorLink" style="display:none;">ERROR</a>
-    <a href="#" class="nav-link archive-link" data-view="archive" id="navArchiveLink" style="display:none;">ARCHIVE</a>
   </nav>
 
   <div id="view-home" class="view active container">
@@ -2013,7 +2008,7 @@
       const id = getObserverId();
       const sourceContent = sourceRevealed
         ? '<span class="term-bracket-fill">［　Regnia　］</span>'
-        : '［　］';
+        : '［　　　　　　　　　］';
       return [
         '<div class="term-line term-pop">&gt; SYSTEM : UNKNOWN_DATA_SEARCH</div>',
         '<div class="term-line term-pop">[ DATA FOUND ]</div>',
@@ -2868,7 +2863,7 @@ window.addEventListener('load', () => {
           'UNKNOWN',
           '',
           '接続先：',
-          '［　］',
+          '［　　　　　］',
           '',
           'WARNING:',
           'THIS DATA SHOULD NOT EXIST.'
@@ -3268,6 +3263,9 @@ window.addEventListener('load', () => {
     }
   }
 })();
+
+// バージョン情報（コンソールでのみ確認可能）
+console.log('%cArcana Record Games %cver 1.0.31', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
