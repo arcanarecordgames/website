@@ -1518,7 +1518,17 @@
     .title{ animation-delay: 1.95s; }
     .subtitle{ animation-delay: 2.25s; }
   </style>
+
+  <!-- Google Analytics (GA4) -->
+  <script async src="https://www.googletagmanager.com/gtag/js?id=G-9LZ6Z3HP3K"></script>
+  <script>
+    window.dataLayer = window.dataLayer || [];
+    function gtag(){ dataLayer.push(arguments); }
+    gtag('js', new Date());
+    gtag('config', 'G-9LZ6Z3HP3K');
+  </script>
 </head>
+
 
 <body>
   <canvas id="starfield"></canvas>
@@ -1881,6 +1891,14 @@
       RENAMES.forEach(([oldKey, newKey]) => {
         const oldVal = localStorage.getItem(oldKey);
         if(oldVal === null) return;
+
+        // 旧キーがまだ使われていることをGA4に記録しておく。
+        // 「もう発生しなくなった」タイミングを見て、将来この移行処理自体を
+        // 削除してよいか判断するための材料に使う。
+        if(typeof gtag === 'function'){
+          gtag('event', 'legacy_key_migrated', { key_name: oldKey });
+        }
+
         if(localStorage.getItem(newKey) === null){
           localStorage.setItem(newKey, oldVal);
         }
@@ -3358,7 +3376,7 @@ const LATEST_NEWS_DATE = '2026-07-22';
 })();
 
 // バージョン情報（コンソールでのみ確認可能）
-console.log('%cArcana Record Games %cver 1.0.37', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
+console.log('%cArcana Record Games %cver 1.0.38', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
