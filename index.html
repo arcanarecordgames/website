@@ -1867,6 +1867,27 @@
   <div id="copy-toast">リンクをコピーしました</div>
 
   <script>
+    // --- localStorageキー名の移行処理（ver1.0.37でキー命名規則を統一） ---
+    // 新キーが存在せず、旧キーにデータが残っている場合のみ値をコピーしてから旧キーを削除する。
+    // 値の中身は一切変更しないため、観測者コードの再発行やARCHIVE解放状況・演出の進行状況には影響しない。
+    (function migrateStorageKeys(){
+      const RENAMES = [
+        ['ar_observer_id', 'ar_id_observer'],
+        ['ar_archive_mail', 'ar_seen_mail'],
+        ['ar_archive_terminal', 'ar_seen_terminal'],
+        ['ar_archive_error', 'ar_seen_error'],
+        ['ar_last_seen_news', 'ar_seen_news']
+      ];
+      RENAMES.forEach(([oldKey, newKey]) => {
+        const oldVal = localStorage.getItem(oldKey);
+        if(oldVal === null) return;
+        if(localStorage.getItem(newKey) === null){
+          localStorage.setItem(newKey, oldVal);
+        }
+        localStorage.removeItem(oldKey);
+      });
+    })();
+
     const canvas = document.getElementById('starfield');
     const ctx = canvas.getContext('2d');
     // 観測者コード演出（4回目・6回目のノイズ）で使う共有の強度フラグ（0=なし, 1=弱, 2=強）
@@ -1874,7 +1895,7 @@
 
     // --- 複数の演出（ホーム/ERROR/メール/ARCHIVE）で共有するヘルパー ---
     function getObserverId(){
-      return localStorage.getItem('ar_observer_id') || '';
+      return localStorage.getItem('ar_id_observer') || '';
     }
 
     function getSuffix(id){
@@ -2042,6 +2063,25 @@
       return html;
     }
 
+    // 文字が一文字ずつタイプされる演出（ERROR認証後の復元ファイル／放置演出のメールで共用）。
+    // container内を書き換え、rawTextを1文字ずつ表示し終えたらonCompleteを呼ぶ。
+    // startDelay: タイプ開始までの待ち時間(ms)。それまではカーソルのみ点滅した状態で表示される。
+    function typewriterEffect(container, rawText, speed, jitter, onComplete, startDelay){
+      container.innerHTML = '<pre class="file-typed"></pre><span class="file-cursor"></span>';
+      const typedEl = container.querySelector('.file-typed');
+      let i = 0;
+      function step(){
+        if(i <= rawText.length){
+          typedEl.textContent = rawText.slice(0, i);
+          i++;
+          setTimeout(step, speed + Math.random() * jitter);
+        } else if(onComplete){
+          onComplete();
+        }
+      }
+      setTimeout(step, startDelay || 0);
+    }
+
     function buildTerminalHTML(sourceRevealed){
       const id = getObserverId();
       const sourceContent = sourceRevealed
@@ -2095,9 +2135,22 @@
 
     // --- ARCHIVE：一度確認したデータは端末に記録され、以後いつでも再確認できる ---
     // localStorageに保存しているため、ページをリロードしても解放状態は維持される。
-    let archiveMailUnlocked = localStorage.getItem('ar_archive_mail') === '1';
-    let archiveTerminalUnlocked = localStorage.getItem('ar_archive_terminal') === '1';
-    let archiveErrorUnlocked = localStorage.getItem('ar_archive_error') === '1';
+    let archiveMailUnlocked = localStorage.getItem('ar_seen_mail') === '1';
+    let archiveTerminalUnlocked = localStorage.getItem('ar_seen_terminal') === '1';
+    let archiveErrorUnlocked = localStorage.getItem('ar_seen_error') === '1';
+
+    // ページ切り替え時／FAQ・ARCHIVE展開時に共通で使うフェードイン演出。
+    // delayStep: 要素ごとの表示ずらし幅(秒)。
+    function playFadeInTargets(container, delayStep){
+      const targets = container.querySelectorAll('.fade-target');
+      targets.forEach((el, i) => {
+        el.classList.remove('page-fade-in');
+        // リフローを強制して、アニメーションを確実に再生させる
+        void el.offsetWidth;
+        el.style.animationDelay = `${i * delayStep}s`;
+        el.classList.add('page-fade-in');
+      });
+    }
 
     function showArchiveNavIfNeeded(){
       if(!(archiveMailUnlocked || archiveErrorUnlocked || archiveTerminalUnlocked)) return;
@@ -2417,7 +2470,7 @@
     })();
 // 観測者識別番号（端末ごとに固定）
 (function initObserverId(){
-  const STORAGE_KEY = 'ar_observer_id';
+  const STORAGE_KEY = 'ar_id_observer';
 
   // 16進数4文字を生成
   function randomCode(length = 4){
@@ -2495,39 +2548,27 @@ window.addEventListener('load', () => {
     const level = corruptionLevel(data.status);
     const rawText = buildFileText(type);
 
-    blackoutFile.innerHTML = '<pre class="file-typed"></pre><span class="file-cursor"></span>';
-    const typedEl = blackoutFile.querySelector('.file-typed');
+    typewriterEffect(blackoutFile, rawText, 15, 12, () => {
+      const wrap = document.createElement('div');
+      wrap.className = level === 2 ? 'file-broken-wrap' : '';
+      wrap.innerHTML = '<pre class="file-typed-final">' + highlightFileText(rawText, data.status) + '</pre>';
+      blackoutFile.innerHTML = '';
+      blackoutFile.appendChild(wrap);
 
-    let i = 0;
-    const speed = 15;
-    function typeStep(){
-      if(i <= rawText.length){
-        typedEl.textContent = rawText.slice(0, i);
-        i++;
-        setTimeout(typeStep, speed + Math.random() * 12);
-      } else {
-        const wrap = document.createElement('div');
-        wrap.className = level === 2 ? 'file-broken-wrap' : '';
-        wrap.innerHTML = '<pre class="file-typed-final">' + highlightFileText(rawText, data.status) + '</pre>';
-        blackoutFile.innerHTML = '';
-        blackoutFile.appendChild(wrap);
+      startCorruptBlockFlicker(blackoutFile, level);
 
-        startCorruptBlockFlicker(blackoutFile, level);
+      archiveErrorUnlocked = true;
+      localStorage.setItem('ar_seen_error', '1');
+      showArchiveNavIfNeeded();
 
-        archiveErrorUnlocked = true;
-        localStorage.setItem('ar_archive_error', '1');
-        showArchiveNavIfNeeded();
-
-        const enterBtn = document.createElement('button');
-        enterBtn.type = 'button';
-        enterBtn.className = 'file-enter-btn';
-        enterBtn.textContent = '[ ENTER ]';
-        blackoutFile.appendChild(enterBtn);
-        setTimeout(() => enterBtn.classList.add('show'), 500);
-        enterBtn.addEventListener('click', resetEasterEgg);
-      }
-    }
-    setTimeout(typeStep, 600);
+      const enterBtn = document.createElement('button');
+      enterBtn.type = 'button';
+      enterBtn.className = 'file-enter-btn';
+      enterBtn.textContent = '[ ENTER ]';
+      blackoutFile.appendChild(enterBtn);
+      setTimeout(() => enterBtn.classList.add('show'), 500);
+      enterBtn.addEventListener('click', resetEasterEgg);
+    }, 600);
   }
 
 
@@ -2667,7 +2708,7 @@ window.addEventListener('load', () => {
     renderTerminalPanel(false);
     termPanel.classList.add('show');
     archiveTerminalUnlocked = true;
-    localStorage.setItem('ar_archive_terminal', '1');
+    localStorage.setItem('ar_seen_terminal', '1');
     showArchiveNavIfNeeded();
     const lines = termPanel.querySelectorAll('.term-line');
     lines.forEach((el, i) => {
@@ -3006,7 +3047,7 @@ formatObserverCodeInput(mailLockInput);
     showContentSubview();
     mailContentViewed = true;
     archiveMailUnlocked = true;
-    localStorage.setItem('ar_archive_mail', '1');
+    localStorage.setItem('ar_seen_mail', '1');
     showArchiveNavIfNeeded();
 
     if(mailEnvelopeIcon){
@@ -3016,21 +3057,9 @@ formatObserverCodeInput(mailLockInput);
     }
 
     const rawText = buildMailText();
-    mailContentBody.innerHTML = '<pre class="file-typed"></pre><span class="file-cursor"></span>';
-    const typedEl = mailContentBody.querySelector('.file-typed');
-
-    let i = 0;
-    const speed = 14;
-    function typeStep(){
-      if(i <= rawText.length){
-        typedEl.textContent = rawText.slice(0, i);
-        i++;
-        setTimeout(typeStep, speed + Math.random() * 10);
-      } else {
-        mailContentBody.innerHTML = '<pre class="file-typed-final mail-final">' + highlightMailText(rawText) + '</pre>';
-      }
-    }
-    setTimeout(typeStep, 900); // 封筒が開くアニメーションの後にタイプ開始
+    typewriterEffect(mailContentBody, rawText, 14, 10, () => {
+      mailContentBody.innerHTML = '<pre class="file-typed-final mail-final">' + highlightMailText(rawText) + '</pre>';
+    }, 900); // 封筒が開くアニメーションの後にタイプ開始
   }
 
   mailIconBtn.addEventListener('click', () => {
@@ -3106,17 +3135,6 @@ formatObserverCodeInput(mailLockInput);
     if(e.key === 'Escape') closeMenu();
   });
 
-  function playFadeIn(view){
-    const targets = view.querySelectorAll('.fade-target');
-    targets.forEach((el, i) => {
-      el.classList.remove('page-fade-in');
-      // リフローを強制して、アニメーションを確実に再生させる
-      void el.offsetWidth;
-      el.style.animationDelay = `${i * 0.15}s`;
-      el.classList.add('page-fade-in');
-    });
-  }
-
   function switchView(viewName){
     views.forEach(v => v.classList.toggle('active', v.id === `view-${viewName}`));
     links.forEach(l => l.classList.toggle('active', l.dataset.view === viewName));
@@ -3124,7 +3142,7 @@ formatObserverCodeInput(mailLockInput);
 
     if(viewName !== 'home'){
       const activeView = document.getElementById(`view-${viewName}`);
-      if(activeView) playFadeIn(activeView);
+      if(activeView) playFadeInTargets(activeView, 0.15);
     }
   }
 
@@ -3148,9 +3166,9 @@ formatObserverCodeInput(mailLockInput);
   const messageField = document.getElementById('contactMessage');
   const emailField = document.getElementById('contactEmail');
 
-  // ▼▼▼ ここをFormspree等で発行された自分のフォームエンドポイントに差し替えてください ▼▼▼
+  // Formspreeの送信先エンドポイント（設定済み）。
+  // 送信先を変更する場合は、Formspreeの管理画面で発行されたURLに差し替えること。
   const FORM_ENDPOINT = 'https://formspree.io/f/xojgklqa';
-  // ▲▲▲ ここまで ▲▲▲
 
   form.addEventListener('submit', async (e) => {
     e.preventDefault();
@@ -3205,16 +3223,6 @@ formatObserverCodeInput(mailLockInput);
 (function initFaq(){
   const items = document.querySelectorAll('.faq-item');
 
-  function playOriginFade(item){
-    const targets = item.querySelectorAll('.fade-target');
-    targets.forEach((el, i) => {
-      el.classList.remove('page-fade-in');
-      void el.offsetWidth;
-      el.style.animationDelay = `${i * 0.12}s`;
-      el.classList.add('page-fade-in');
-    });
-  }
-
   items.forEach(item => {
     const question = item.querySelector('.faq-question');
     const answer = item.querySelector('.faq-answer');
@@ -3226,7 +3234,7 @@ formatObserverCodeInput(mailLockInput);
       });
       if(!isOpen){
         item.classList.add('open');
-        playOriginFade(item);
+        playFadeInTargets(item, 0.12);
         // フェードイン演出の分、少し遅れて実寸に合わせて高さを再計算
         answer.style.maxHeight = answer.scrollHeight + 'px';
         setTimeout(() => {
@@ -3327,7 +3335,7 @@ formatObserverCodeInput(mailLockInput);
 const LATEST_NEWS_DATE = '2026-07-22';
 
 (function initNewsBadge(){
-  const STORAGE_KEY = 'ar_last_seen_news';
+  const STORAGE_KEY = 'ar_seen_news';
   const badge = document.getElementById('newsBadge');
   const newsLink = document.querySelector('.nav-link[data-view="news"]');
   if(!badge || !newsLink) return;
@@ -3350,7 +3358,7 @@ const LATEST_NEWS_DATE = '2026-07-22';
 })();
 
 // バージョン情報（コンソールでのみ確認可能）
-console.log('%cArcana Record Games %cver 1.0.36', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
+console.log('%cArcana Record Games %cver 1.0.37', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
