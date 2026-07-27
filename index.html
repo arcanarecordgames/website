@@ -170,13 +170,15 @@
   pointer-events:none;
 }
 
-/* 観測者識別番号 */
+/* 観測者識別番号（初期状態は非表示にしておき、JSでフェード表示させる） */
 .observer-box{
   display:flex;
   flex-direction:column;
   align-items:center;
   gap:8px;
   margin:6px 0 26px;
+  opacity:0;
+  transform:translateY(6px);
 }
 
 .observer-label{
@@ -199,11 +201,6 @@
     0 0 0 1px rgba(255,255,255,.03) inset,
     0 0 18px rgba(59,130,246,.12);
   backdrop-filter:blur(6px);
-}
-/* ノイズ演出 */
-.observer-box{
-  opacity:0;
-  transform:translateY(6px);
 }
 
 .observer-box.reveal{
@@ -560,15 +557,6 @@
       width:100%;
     }
 
-    .news-title{
-      font-size:clamp(1.6rem, 6vw, 2.4rem);
-      font-weight:700;
-      letter-spacing:.08em;
-      margin:8px 0 30px;
-      color:#f8fafc;
-      text-shadow:0 0 10px rgba(96,165,250,.18);
-    }
-
     .news-list{
       width:100%;
       display:flex;
@@ -880,16 +868,6 @@
       text-shadow:0 0 8px rgba(96,165,250,.5);
     }
 
-    .term-cursor{
-      display:inline-block;
-      width:7px;
-      height:12px;
-      background:#7dd3fc;
-      margin-left:2px;
-      vertical-align:middle;
-      animation:cursorBlink .8s steps(1) infinite;
-    }
-
     @keyframes cursorBlink{
       0%,49%{ opacity:1; }
       50%,100%{ opacity:0; }
@@ -934,11 +912,6 @@
       87%{ filter:none; transform:translate(-3px,2px); }
       90%{ filter:contrast(1.8) saturate(1.6); transform:translate(4px,-2px); }
       94%{ filter:none; transform:translate(0,0) skewX(0deg); }
-    }
-
-    /* 観測者コード演出：テキストの乱れ */
-    .text-glitch-target{
-      display:inline-block;
     }
 
     /* 観測者コード演出：システム警告オーバーレイ */
@@ -1394,17 +1367,6 @@
     }
 
     /* お問い合わせ */
-    .contact-block{
-      width:100%;
-      padding:26px 22px;
-      border:1px solid rgba(148,163,184,.2);
-      border-radius:16px;
-      background:rgba(17,24,39,.5);
-      color:#cbd5e1;
-      font-size:14px;
-      line-height:2;
-    }
-
     .contact-mail{
       display:inline-block;
       margin-top:14px;
@@ -2131,7 +2093,8 @@
       }, speed);
     }
 
-    // --- ARCHIVE：一度確認したデータだけ再確認できる ---
+    // --- ARCHIVE：一度確認したデータは端末に記録され、以後いつでも再確認できる ---
+    // localStorageに保存しているため、ページをリロードしても解放状態は維持される。
     let archiveMailUnlocked = localStorage.getItem('ar_archive_mail') === '1';
     let archiveTerminalUnlocked = localStorage.getItem('ar_archive_terminal') === '1';
     let archiveErrorUnlocked = localStorage.getItem('ar_archive_error') === '1';
@@ -2501,12 +2464,15 @@ window.addEventListener('load', () => {
   }, 2600); // subtitleの2.25sより少し後
 });
 
-// 観測者コード：クリック演出（全7段階）
+// 観測者コード：タップ演出（全7段階）
+// - 演出の進行度（stage）自体はページを読み込むたびに毎回リセットされ、保存しない。
+// - ただしERROR画面でのコード認証を一度確認済み（archiveErrorUnlocked）の場合は、
+//   演出そのものを二度と再生しない（ERRORメニュー項目も再表示されない）。
 (function initObserverEasterEgg(){
-  // 演出の進行度はページを読み込むたびに毎回リセットされる（保存しない）
+  // 過去バージョン（進行状態を保存していた頃）の残留データが端末に残っていた場合に備えて
+  // 一度だけ削除しておく。現行仕様では使用していないキー。
   const STAGE_KEY = 'ar_observer_stage';
   const BANNER_SEEN_KEY = 'ar_observer_banner_seen';
-  // 過去バージョンで保存された進行状態が残っていた場合に備えて破棄しておく
   localStorage.removeItem(STAGE_KEY);
   localStorage.removeItem(BANNER_SEEN_KEY);
 
@@ -2877,7 +2843,10 @@ formatObserverCodeInput(errorInput);
     if(errorBtn) errorBtn.disabled = false;
   }
 
-  // ENTER押下時：演出を全てリセットしてホームへ戻る
+  // ENTER押下時：画面演出（グリッチ・ノイズ・ERRORメニュー表示など）を全てリセットしてホームへ戻る。
+  // ARCHIVEに保存された解放状態（archiveErrorUnlockedなど）はここではリセットしない。
+  // すでにarchiveErrorUnlockedがtrueになっている場合、ホームに戻っても
+  // 観測者コードのタップ演出は（呼び出し元のクリックハンドラの判定により）再度始まらない。
   function resetEasterEgg(){
     stage = 0;
     stopMenuGlitch();
@@ -3381,7 +3350,7 @@ const LATEST_NEWS_DATE = '2026-07-22';
 })();
 
 // バージョン情報（コンソールでのみ確認可能）
-console.log('%cArcana Record Games %cver 1.0.35', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
+console.log('%cArcana Record Games %cver 1.0.36', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
