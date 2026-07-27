@@ -2084,7 +2084,7 @@
       const id = getObserverId();
       const sourceContent = sourceRevealed
         ? '<span class="term-bracket-fill">［　Regnia　］</span>'
-        : '［　　　　　　　　　］';
+        : '［　］';
       return [
         '<div class="term-line term-pop">&gt; SYSTEM : UNKNOWN_DATA_SEARCH</div>',
         '<div class="term-line term-pop">[ DATA FOUND ]</div>',
@@ -2843,6 +2843,9 @@ window.addEventListener('load', () => {
 
   if(codeEl){
     codeEl.addEventListener('click', () => {
+      // 一度ERROR画面でのコード認証を確認済みの場合は、
+      // 観測者コードの演出（ERROR項目の出現含む）を二度と再生しない
+      if(archiveErrorUnlocked) return;
       if(stage >= 7) return;
       stage += 1;
       playStage(stage);
@@ -2946,7 +2949,7 @@ formatObserverCodeInput(errorInput);
           'UNKNOWN',
           '',
           '接続先：',
-          '［　　　　　］',
+          '［　］',
           '',
           'WARNING:',
           'THIS DATA SHOULD NOT EXIST.'
@@ -3378,7 +3381,7 @@ const LATEST_NEWS_DATE = '2026-07-22';
 })();
 
 // バージョン情報（コンソールでのみ確認可能）
-console.log('%cArcana Record Games %cver 1.0.34', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
+console.log('%cArcana Record Games %cver 1.0.35', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
