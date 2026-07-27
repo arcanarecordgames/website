@@ -45,6 +45,10 @@
   </script>
 
   <style>
+    *, *::before, *::after{
+      box-sizing: border-box;
+    }
+
     html, body{
       margin:0;
       min-height:100vh;
@@ -1579,7 +1583,7 @@
       <div class="mail-lock-title">LOCKED</div>
       <div class="mail-lock-sub">観測者コードを入力してください</div>
       <div class="error-code-box">
-        <input type="text" id="mailLockInput" class="error-code-input" placeholder="観測者コードを入力"  maxlength="13" autocomplete="off">
+        <input type="text" id="mailLockInput" class="error-code-input" placeholder="観測者コードを入力" maxlength="13" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text">
         <button type="button" id="mailLockConfirm" class="error-confirm-btn">確認</button>
         <div id="mailLockMismatch" class="error-mismatch"></div>
       </div>
@@ -1884,7 +1888,7 @@
     <h2 class="error-page-title fade-target">ERROR</h2>
     <p class="error-page-sub fade-target">[ 未確認領域 ]<br>アクセス権限外のデータを検出しました。</p>
     <div class="error-code-box fade-target">
-      <input type="text" id="errorCodeInput" class="error-code-input" placeholder="観測者コードを入力" maxlength="13" autocomplete="off">
+      <input type="text" id="errorCodeInput" class="error-code-input" placeholder="観測者コードを入力" maxlength="13" autocomplete="off" autocapitalize="characters" autocorrect="off" spellcheck="false" inputmode="text">
       <button type="button" id="errorConfirmBtn" class="error-confirm-btn">ENTER</button>
       <div id="errorMismatch" class="error-mismatch"></div>
     </div>
@@ -1918,14 +1922,48 @@
 
     // 観測者コード入力欄：自動整形（大文字化＋ハイフン自動挿入）
     function formatObserverCodeInput(el){
-      el.addEventListener('input', () => {
-        let raw = el.value.toUpperCase().replace(/[^0-9A-Z]/g, '');
+      let isComposing = false;
+
+      function doFormat(){
+        const prevValue = el.value;
+        const caretPos = el.selectionStart;
+
+        // カーソルより前にある「英数字」の数を数えておく（ハイフンは数えない）
+        const rawCharsBeforeCaret = prevValue.slice(0, caretPos).replace(/[^0-9A-Za-z]/g, '').length;
+
+        let raw = prevValue.toUpperCase().replace(/[^0-9A-Z]/g, '');
         raw = raw.slice(0, 11); // AR(2) + 26312(5) + XXXX(4) = 11文字
         let formatted = '';
         if(raw.length > 0) formatted += raw.slice(0, 2);
         if(raw.length > 2) formatted += '-' + raw.slice(2, 7);
         if(raw.length > 7) formatted += '-' + raw.slice(7, 11);
         el.value = formatted;
+
+        // 数えておいた文字数分だけ進んだ位置にカーソルを戻す（ハイフンは飛ばす）
+        let remaining = rawCharsBeforeCaret;
+        let newPos = 0;
+        for(; newPos < formatted.length && remaining > 0; newPos++){
+          if(formatted[newPos] !== '-') remaining--;
+        }
+        while(formatted[newPos] === '-') newPos++;
+        el.setSelectionRange(newPos, newPos);
+      }
+
+      // スマホの予測変換・日本語入力などの「合成中」は値を書き換えない。
+      // 合成中に値を書き換えると、確定前の文字と整形後の文字が二重に見えることがあるため。
+      el.addEventListener('compositionstart', () => { isComposing = true; });
+      el.addEventListener('compositionend', () => {
+        // iOSではcompositionend発生時点でまだ確定文字がel.valueに
+        // 完全に反映されていないことがあるため、1テンポ待ってから整形する
+        setTimeout(() => {
+          isComposing = false;
+          doFormat();
+        }, 0);
+      });
+
+      el.addEventListener('input', (e) => {
+        if(isComposing || e.isComposing) return;
+        doFormat();
       });
     }
 
@@ -2094,12 +2132,12 @@
     }
 
     // --- ARCHIVE：一度確認したデータだけ再確認できる ---
-    let archiveMailUnlocked = false;
-    let archiveTerminalUnlocked = false;
-    let archiveErrorUnlocked = false;
+    let archiveMailUnlocked = localStorage.getItem('ar_archive_mail') === '1';
+    let archiveTerminalUnlocked = localStorage.getItem('ar_archive_terminal') === '1';
+    let archiveErrorUnlocked = localStorage.getItem('ar_archive_error') === '1';
 
     function showArchiveNavIfNeeded(){
-      if(!(archiveMailUnlocked || archiveErrorUnlocked)) return;
+      if(!(archiveMailUnlocked || archiveErrorUnlocked || archiveTerminalUnlocked)) return;
       const navArchiveLink = document.getElementById('navArchiveLink');
       if(navArchiveLink) navArchiveLink.style.display = '';
     }
@@ -2191,6 +2229,9 @@
     if(navArchiveLinkEl){
       navArchiveLinkEl.addEventListener('click', renderArchiveList);
     }
+
+    // 保存されている進行状況があれば、読み込み時点でARCHIVEメニューを表示しておく
+    showArchiveNavIfNeeded();
 
     function resize(){
       canvas.width = window.innerWidth;
@@ -2508,6 +2549,7 @@ window.addEventListener('load', () => {
         startCorruptBlockFlicker(blackoutFile, level);
 
         archiveErrorUnlocked = true;
+        localStorage.setItem('ar_archive_error', '1');
         showArchiveNavIfNeeded();
 
         const enterBtn = document.createElement('button');
@@ -2659,6 +2701,7 @@ window.addEventListener('load', () => {
     renderTerminalPanel(false);
     termPanel.classList.add('show');
     archiveTerminalUnlocked = true;
+    localStorage.setItem('ar_archive_terminal', '1');
     showArchiveNavIfNeeded();
     const lines = termPanel.querySelectorAll('.term-line');
     lines.forEach((el, i) => {
@@ -2991,6 +3034,7 @@ formatObserverCodeInput(mailLockInput);
     showContentSubview();
     mailContentViewed = true;
     archiveMailUnlocked = true;
+    localStorage.setItem('ar_archive_mail', '1');
     showArchiveNavIfNeeded();
 
     if(mailEnvelopeIcon){
@@ -3334,7 +3378,7 @@ const LATEST_NEWS_DATE = '2026-07-22';
 })();
 
 // バージョン情報（コンソールでのみ確認可能）
-console.log('%cArcana Record Games %cver 1.0.33', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
+console.log('%cArcana Record Games %cver 1.0.34', 'color:#93c5fd;font-weight:bold;font-size:12px;', 'color:#64748b;font-size:12px;');
   </script>
 </body>
 </html>
